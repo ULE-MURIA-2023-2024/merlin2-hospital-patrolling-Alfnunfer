@@ -61,27 +61,24 @@ class Merlin2RoomPatrolFsnAction(Merlin2FsmAction):
 
         
         
-        '''self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
-        timer_period = 0.1  # segundos
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.start_time = self.get_clock().now()
-        self.rotation_duration = 10  # Duración en segundos para completar 360 grados'''
+        self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
 
 
     def rotate(self, blackboard: Blackboard) -> str:
 
-        '''msg = Twist()
-        current_time = self.get_clock().now()
-        elapsed_time = (current_time - self.start_time).nanoseconds / 1e9
+        msg = Twist()
+        
+        
+        msg.angular.z = 0.1
+        self.publisher_.publish(msg)
 
-        if elapsed_time < self.rotation_duration:
-            # Definir velocidad angular para rotar 360 grados en `rotation_duration` segundos
-            msg.angular.z = 2 * 3.14159 / self.rotation_duration
-        else:
-            msg.angular.z = 0.0
-            self.get_logger().info('Rotación completa')
+        time.sleep(10)
+    
+        msg.angular.z = 0.0
+        self.publisher_.publish(msg)
+        self.get_logger().info('Rotación completa')
 
-        self.publisher_.publish(msg)'''
+        
 
         return SUCCEED
 
@@ -93,13 +90,6 @@ class Merlin2RoomPatrolFsnAction(Merlin2FsmAction):
         return [self._room, self._wp]
     
     def create_conditions(self) -> List[PddlConditionEffectDto]:
-
-        cond_1 = PddlConditionEffectDto(
-            room_patrolled,
-            [self._room],
-            PddlConditionEffectDto.AT_START,
-            is_negative=True
-        )
 
         cond_2 = PddlConditionEffectDto(
             robot_at,
@@ -113,7 +103,7 @@ class Merlin2RoomPatrolFsnAction(Merlin2FsmAction):
             PddlConditionEffectDto.AT_START
         )
 
-        return [cond_1, cond_2, cond_3]
+        return [cond_2, cond_3]
     
     def create_efects(self) -> List[PddlConditionEffectDto]:
 
@@ -131,5 +121,5 @@ def main():
     node.join_spin()
     rclpy.shutdown()
 
-if __name__ == "main":
+if __name__ == "__main__":
     main()

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # TODO: write the mission node
 
+import time
 
 import rclpy
 from typing import List
 from merlin2_mission import Merlin2FsmMissionNode
     
-from kant_dto import PddlObjectDto, PddlConditionEffectDto
+from kant_dto import PddlObjectDto, PddlConditionEffectDto, PddlPropositionDto
 from merlin2_hospital_patrolling.pddl import room_type, room_at, room_patrolled
 from merlin2_basic_actions.merlin2_basic_types import wp_type
 from merlin2_basic_actions.merlin2_basic_predicates import robot_at
@@ -16,6 +17,9 @@ from yasmin_ros.basic_outcomes import SUCCEED
 from yasmin import CbState
 
 class MissionNode(Merlin2FsmMissionNode):
+
+    END = "end"
+    HAS_NEXT = "next"
 
     def __init__(self) -> None:
 
@@ -56,14 +60,13 @@ class MissionNode(Merlin2FsmMissionNode):
         self.wp4 = PddlObjectDto(wp_type, "wp4")
         self.wp5 = PddlObjectDto(wp_type, "wp5")
 
-        self.room0 = PddlObjectDto(room_type, "room0")
         self.room1 = PddlObjectDto(room_type, "room1")
         self.room2 = PddlObjectDto(room_type, "room2")
         self.room3 = PddlObjectDto(room_type, "room3")
         self.room4 = PddlObjectDto(room_type, "room4")
         self.room5 = PddlObjectDto(room_type, "room5")
 
-        return[self.wp0,self.wp1,self.wp2,self.wp3,self.wp4,self.wp5,self.room0,self.room1,self.room2,self.room3,self.room4,self.room5]
+        return[self.wp0,self.wp1,self.wp2,self.wp3,self.wp4,self.wp5,self.room1,self.room2,self.room3,self.room4,self.room5]
     
 
     def create_propositions(self) -> List[PddlConditionEffectDto]:
@@ -72,7 +75,6 @@ class MissionNode(Merlin2FsmMissionNode):
     
         return[
             PddlConditionEffectDto(robot_at, [self.wp0]),
-            PddlConditionEffectDto(room_at, [self.room0, self.wp0]),
             PddlConditionEffectDto(room_at, [self.room1, self.wp1]),
             PddlConditionEffectDto(room_at, [self.room2, self.wp2]),
             PddlConditionEffectDto(room_at, [self.room3, self.wp3]),
@@ -83,12 +85,11 @@ class MissionNode(Merlin2FsmMissionNode):
     def prepare_goals(self, blackboard) -> str:
         
         blackboard.goals = [
-            PddlConditionEffectDto(room_patrolled, [self.room0], is_goal=True),
-            PddlConditionEffectDto(room_patrolled, [self.room1], is_goal=True),
-            PddlConditionEffectDto(room_patrolled, [self.room2], is_goal=True),
-            PddlConditionEffectDto(room_patrolled, [self.room3], is_goal=True),
-            PddlConditionEffectDto(room_patrolled, [self.room4], is_goal=True),
-            PddlConditionEffectDto(room_patrolled, [self.room5], is_goal=True)
+            PddlPropositionDto(room_patrolled, [self.room1], is_goal=True),
+            PddlPropositionDto(room_patrolled, [self.room2], is_goal=True),
+            PddlPropositionDto(room_patrolled, [self.room3], is_goal=True),
+            PddlPropositionDto(room_patrolled, [self.room4], is_goal=True),
+            PddlPropositionDto(room_patrolled, [self.room5], is_goal=True)
         ]
 
         return SUCCEED
@@ -107,10 +108,10 @@ class MissionNode(Merlin2FsmMissionNode):
 def main():
     rclpy.init()
     node = MissionNode()
-
+    time.sleep(5)
     node.execute_mission()
     node.join_spin()
     rclpy.shutdown()
 
-if __name__ == "main":
+if __name__ == "__main__":
     main()
